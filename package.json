@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node headless/serve.js",
     "headless": "node headless/run.js",
-    "balance": "node headless/balance.js"
+    "balance": "node headless/balance.js",
+    "mapcheck": "node headless/mapcheck.js"
   },
   "license": "MIT"
 }

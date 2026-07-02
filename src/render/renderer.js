@@ -3,7 +3,7 @@
 // and translation of sim events into FX + SFX. The HUD is DOM (never rotates).
 
 /* global PIXI */
-import { GRID_W, GRID_H, BASE } from '../sim/map.js';
+import { GRID_W, GRID_H, SLICE_LAYOUT } from '../sim/map.js';
 import { PALETTE, TOWERS } from '../sim/data.js';
 import { TILE, buildTerrain } from './terrain.js';
 import { UnitView } from './units.js';
@@ -14,7 +14,8 @@ import { Sfx } from '../audio.js';
 const BOARD_W = GRID_W * TILE, BOARD_H = GRID_H * TILE;
 
 export class Renderer {
-  constructor(canvasHost) {
+  constructor(canvasHost, layout = SLICE_LAYOUT) {
+    this.layout = layout;
     this.app = new PIXI.Application({
       background: 0x0c141c, antialias: true,
       resizeTo: canvasHost, autoDensity: true,
@@ -44,7 +45,7 @@ export class Renderer {
     this.world.addChild(L.water, L.ground, L.shadows, L.grass, L.main, L.groundFx, L.air, L.clouds, L.fx, L.fog);
     L.main.sortableChildren = true;
 
-    this.terrain = buildTerrain(L);
+    this.terrain = buildTerrain(L, layout);
     this.particles = new Particles(L);
     this.fx = new FxManager(L);
     this.placementUI = new PlacementUI(L);
@@ -123,12 +124,14 @@ export class Renderer {
           this.fx.coin(ev.x * TILE, ev.y * TILE - 14, ev.amount, () => this.world.rotation);
           Sfx.coin();
           break;
-        case 'baseHit':
-          this.particles.explosion(BASE.cx * TILE + (Math.random() - 0.5) * 40, BASE.cy * TILE + (Math.random() - 0.5) * 40);
-          this.particles.smoke(BASE.cx * TILE, BASE.cy * TILE - 20);
+        case 'baseHit': {
+          const b = this.layout.base;
+          this.particles.explosion(b.cx * TILE + (Math.random() - 0.5) * 40, b.cy * TILE + (Math.random() - 0.5) * 40);
+          this.particles.smoke(b.cx * TILE, b.cy * TILE - 20);
           this.shake = Math.min(8, this.shake + 2.5);
           Sfx.baseHit();
           break;
+        }
         case 'placed': Sfx.place(); break;
         case 'buildDone':
         case 'upgradeDone':

@@ -17,6 +17,7 @@ No build step, no network needed — PixiJS 7.4.3 is vendored in `vendor/`.
 ```bash
 npm run headless   # proof: same seed twice → identical hash; different seed → diverges
 npm run balance    # GDD §17 harness: price table from 100 seeded runs per unit
+npm run mapcheck   # audit random map generation: validity, determinism, sim stability
 node headless/balance.js --all        # price the full 72-unit roster
 node headless/balance.js --runs 40    # faster pass
 ```
@@ -25,6 +26,15 @@ node headless/balance.js --runs 40    # faster pass
 
 - **Survive 5 waves** of the Ground/Powder assault. Base HP 2000, starting gold 800
   (locked slice parameters from `bulwark-balance.xlsx` → Vertical_Slice).
+- **Every game gets a random map**, generated from the game seed within the slice
+  geometry contract (one ground lane beside one water lane, base in a clearing):
+  the river's position and width, which bank the outpost sits on, the spawn
+  corridor, tree stands, and elevation bands all vary. Each candidate board
+  passes a quick pathing verification before play — walker A* routes from every
+  spawn row (with a minimum march length), a floater route into strike range of
+  the base, and enough buildable ground — otherwise it re-rolls deterministically
+  (fixed board as final fallback). Same seed → same map, so replays reconstruct
+  the board for free; the intro "Recon" toast describes what was generated.
 - **Build** (keys 1/2/3 or the bottom bar): Cannon Tower (anti-ground), Flak Tower
   (anti-air, needs radar contact), Wall/Moat (reroutes walkers — you can maze, but
   never fully seal the lane). Hover shows a valid/invalid ghost; click to place
@@ -56,7 +66,8 @@ node headless/balance.js --runs 40    # faster pass
 src/sim/        deterministic core — pure JS, zero DOM/Pixi imports
   data.js         all tunables transcribed from bulwark-balance.xlsx
   units_data.js   AUTO-GENERATED full 72-unit roster (tools/extract_balance.py)
-  map.js          grid, lanes, A* pathfinding, seal-check
+  map.js          seeded random map generation + pathing validation, fixed
+                  slice board, A* pathfinding, seal-check
   sim.js          fixed-step 30 Hz sim: waves, combat, economy, lifecycle, hash
   replay.js       battle log finalize/verify + localStorage persistence
 src/render/     PixiJS presentation (reads sim state, never mutates it)
@@ -85,6 +96,12 @@ headless/       run.js (determinism proof) · balance.js (§17) · serve.js
   in `src/sim/data.js` / `units_data.js`, regenerable from the workbook.
 
 ## Balance sim (GDD §17)
+
+The harness and the scripted headless demo always run on the **fixed benchmark
+board** (`SLICE_LAYOUT`) so §17 price tables stay comparable across builds;
+random maps are an interactive-play feature. `headless/mapcheck.js` audits the
+generator: 500 seeds → 500 valid boards, byte-identical on regeneration, with
+battle hashes reproduced on generated maps.
 
 `headless/balance.js` builds the fixed, documented defense set
 (cannons @14,6 & 18,8 · flak @16,6 · walls @12,5-7) on the same board the slice

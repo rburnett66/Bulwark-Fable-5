@@ -11,7 +11,7 @@ import {
   EFFECTIVENESS, DAMAGE_STATUS, TOWERS, ATTACK_INTERVALS, SLICE, SLICE_ATTACKERS,
   WAVES, SIM_TICK_RATE, unitById,
 } from './data.js';
-import { GameMap, GRID_W, GRID_H, BASE, SPAWNS, WATER_ROWS, distToBase, closestPointOnBase, isWater } from './map.js';
+import { GameMap, SLICE_LAYOUT, generateLayout, GRID_W, GRID_H } from './map.js';
 
 const TR = SIM_TICK_RATE;
 const DT = 1 / TR;
@@ -27,13 +27,18 @@ export class Sim {
    * @param {object} opts
    *   seed        — required, any int
    *   sandbox     — true disables waves & win/lose (balance harness mode)
+   *   layout      — explicit board; default: the fixed slice board in sandbox
+   *                 mode, otherwise a seed-generated random board (validated
+   *                 for playability — see map.js). Same seed → same map, so
+   *                 replays reconstruct the board for free.
    *   record      — keep a command log for replay (default true)
    */
   constructor(opts) {
     this.seed = opts.seed >>> 0;
     this.rng = makeRng(this.seed);
     this.sandbox = !!opts.sandbox;
-    this.map = new GameMap();
+    const layout = opts.layout || (this.sandbox ? SLICE_LAYOUT : generateLayout(this.seed).layout);
+    this.map = new GameMap(layout);
     this.tick = 0;
     this.gold = SLICE.startingGold;
     this.baseHP = SLICE.baseHP;
@@ -51,10 +56,11 @@ export class Sim {
     this.over = null;                 // 'win' | 'lose'
     this.pending = [];                // tick-stamped commands not yet executed
     this.hashAcc = hashInit();
+    this.hashAcc = hashStr(this.hashAcc, layout.id); // map identity is part of the battle fingerprint
     // harness accounting (GDD §17 effective-DPS pricing)
     this.attackerDamage = 0;          // damage dealt by attackers to base+structures
     this.attackerAliveTicks = 0;
-    this.log = { version: 1, seed: this.seed, commands: [], outcome: null, ticks: 0, finalHash: null };
+    this.log = { version: 2, seed: this.seed, mapId: layout.id, commands: [], outcome: null, ticks: 0, finalHash: null };
   }
 
   // ---------------------------------------------------------------- commands
@@ -237,9 +243,10 @@ export class Sim {
     const def = unitById(spec.unit);
     const domain = spec.domain;
     let c = 0, r;
-    if (domain === 'Walker') r = SPAWNS.ground.rows[Math.floor(entry.rowPick * SPAWNS.ground.rows.length)];
-    else if (domain === 'Floater' || domain === 'Swimmer') r = WATER_ROWS[Math.floor(entry.rowPick * WATER_ROWS.length)];
-    else r = 1 + Math.floor(entry.rowPick * 12); // flyer: any lane
+    const lay = this.map.layout;
+    if (domain === 'Walker') r = lay.spawns.ground.rows[Math.floor(entry.rowPick * lay.spawns.ground.rows.length)];
+    else if (domain === 'Floater' || domain === 'Swimmer') r = lay.waterRows[Math.floor(entry.rowPick * lay.waterRows.length)];
+    else r = lay.spawns.air.min + Math.floor(entry.rowPick * (lay.spawns.air.max - lay.spawns.air.min + 1)); // flyer: any lane
     const u = this.makeUnit(def, domain, c, r, entry, spec);
     this.units.push(u);
     this.emit({ t: 'spawn', id: u.id, kind: entry.kind, unit: def.id, domain, x: u.x, y: u.y });
@@ -292,8 +299,9 @@ export class Sim {
 
   nearestWalkableAroundBase(tc, tr) {
     let best = null, bestD = Infinity;
-    for (let c = BASE.c0 - 1; c <= BASE.c1 + 1; c++) {
-      for (let r = BASE.r0 - 1; r <= BASE.r1 + 1; r++) {
+    const b = this.map.layout.base;
+    for (let c = b.c0 - 1; c <= b.c1 + 1; c++) {
+      for (let r = b.r0 - 1; r <= b.r1 + 1; r++) {
         if (!this.map.walkable(c, r)) continue;
         const d = Math.hypot(c - tc, r - tr);
         if (d < bestD) { bestD = d; best = [c, r]; }
@@ -331,7 +339,7 @@ export class Sim {
         }
         // fall through to base attack when nothing left to raid
       }
-      const dBase = distToBase(u.x, u.y);
+      const dBase = this.map.distToBase(u.x, u.y);
       if (dBase <= u.range) { this.attackTick(u, { kind: 'base' }); continue; }
       this.moveAlongDomain(u);
     }
@@ -348,7 +356,7 @@ export class Sim {
 
   moveAlongDomain(u) {
     if (u.domain === 'Flyer') {
-      const [bx, by] = closestPointOnBase(u.x, u.y);
+      const [bx, by] = this.map.closestPointOnBase(u.x, u.y);
       this.moveToward(u, bx, by);
       return;
     }
@@ -374,7 +382,7 @@ export class Sim {
     }
     if (u.pathIdx >= u.path.length) {
       // path exhausted but still out of range (e.g. floater short range): nudge toward base
-      const [bx, by] = closestPointOnBase(u.x, u.y);
+      const [bx, by] = this.map.closestPointOnBase(u.x, u.y);
       if (u.domain === 'Walker') this.moveToward(u, bx, by);
       else { // floaters stay in water
         const tx = Math.min(Math.max(bx, 0.5), GRID_W - 0.5);
@@ -410,7 +418,7 @@ export class Sim {
       u.lockT = Math.round(LOCK_TIME_UNIT * TR);   // sensors lead, weapon follows
     }
     let tx, ty;
-    if (target.kind === 'base') { [tx, ty] = closestPointOnBase(u.x, u.y); }
+    if (target.kind === 'base') { [tx, ty] = this.map.closestPointOnBase(u.x, u.y); }
     else { tx = target.obj.x; ty = target.obj.y; }
     u.headAim = Math.atan2(ty - u.y, tx - u.x);
     if (u.lockT > 0) { u.lockT--; u.aim += (u.headAim - u.aim) * 0.3; return; }
@@ -463,7 +471,8 @@ export class Sim {
   // ------------------------------------------------------------- structures
   updateStructures() {
     // radar coverage for this tick (radar sees air, not ground — GDD §5)
-    const radars = [{ x: BASE.cx, y: BASE.cy, r: SLICE.baseRadar }];
+    const bb = this.map.layout.base;
+    const radars = [{ x: bb.cx, y: bb.cy, r: SLICE.baseRadar }];
     for (const s of this.structures) {
       if (s.kind === 'flak' && s.state === 'ready') radars.push({ x: s.x, y: s.y, r: s.def.radar });
     }
@@ -519,7 +528,7 @@ export class Sim {
         }
         const d = Math.hypot(u.x - s.x, u.y - s.y);
         if (d > range) continue;
-        const prio = distToBase(u.x, u.y); // shoot what's closest to breaching
+        const prio = this.map.distToBase(u.x, u.y); // shoot what's closest to breaching
         if (prio < bestD - 1e-9 || (Math.abs(prio - bestD) < 1e-9 && (!target || u.id < target.id))) {
           bestD = prio; target = u;
         }
@@ -675,9 +684,10 @@ export class Sim {
     const pick = this.rng.next();
     const jx = this.rng.range(-0.15, 0.15), jy = this.rng.range(-0.3, 0.3);
     let r;
-    if (dom === 'Walker') r = row ?? SPAWNS.ground.rows[Math.floor(pick * SPAWNS.ground.rows.length)];
-    else if (dom === 'Floater' || dom === 'Swimmer') r = row ?? WATER_ROWS[Math.floor(pick * WATER_ROWS.length)];
-    else r = row ?? 1 + Math.floor(pick * 12);
+    const lay = this.map.layout;
+    if (dom === 'Walker') r = row ?? lay.spawns.ground.rows[Math.floor(pick * lay.spawns.ground.rows.length)];
+    else if (dom === 'Floater' || dom === 'Swimmer') r = row ?? lay.waterRows[Math.floor(pick * lay.waterRows.length)];
+    else r = row ?? lay.spawns.air.min + Math.floor(pick * (lay.spawns.air.max - lay.spawns.air.min + 1));
     const u = this.makeUnit(def, dom, 0, r, { kind: unitId, rowPick: pick, jx, jy },
       { targetsStructures: targetsStructures || def.targets === 'Structures' });
     u.tier = tier;
@@ -701,4 +711,4 @@ export class Sim {
   }
 }
 
-export { TR as TICK_RATE, DT as TICK_DT, GRID_W, GRID_H, BASE, WATER_ROWS, FLYER_ALTITUDE };
+export { TR as TICK_RATE, DT as TICK_DT, GRID_W, GRID_H, FLYER_ALTITUDE };

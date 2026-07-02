@@ -3,8 +3,8 @@
 // Layer order follows the canonical z-order (visual spec §1).
 
 /* global PIXI */
-import { GRID_W, GRID_H, WATER_ROWS, BASE, TREES, isWater } from '../sim/map.js';
-import { PALETTE } from '../sim/data.js';
+import { GRID_W, GRID_H, SLICE_LAYOUT } from '../sim/map.js';
+import { PALETTE, SLICE } from '../sim/data.js';
 import { makeWaterFilter, makeCloudFilter } from './shaders.js';
 
 export const TILE = 48;
@@ -16,15 +16,19 @@ function lcg(seed) {
   return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
 }
 
-export function buildTerrain(layers) {
+export function buildTerrain(layers, layout = SLICE_LAYOUT) {
   const rnd = lcg(1234567);
+  const WATER_ROWS = layout.waterRows;
+  const BASE = layout.base;
+  const TREES = layout.trees;
+  const isWater = (c, r) => r >= WATER_ROWS[0] && r <= WATER_ROWS[WATER_ROWS.length - 1];
 
   // ---- ground: low/mid/high bands + mottling -------------------------------
   const g = new PIXI.Graphics();
   for (let r = 0; r < GRID_H; r++) {
     for (let c = 0; c < GRID_W; c++) {
       if (isWater(c, r)) continue;
-      const band = r < 3 ? PALETTE.groundHigh : (r < 6 ? PALETTE.groundMid : PALETTE.groundLow);
+      const band = r < layout.bands.high ? PALETTE.groundHigh : (r < layout.bands.mid ? PALETTE.groundMid : PALETTE.groundLow);
       g.beginFill(band);
       g.drawRect(c * TILE, r * TILE, TILE, TILE);
       g.endFill();
@@ -147,7 +151,7 @@ export function buildTerrain(layers) {
 
   // ---- radar dome ring (base radar sees air — GDD §5) -----------------------
   const radar = new PIXI.Graphics();
-  drawDashedCircle(radar, BASE.cx * TILE, BASE.cy * TILE, 9 * TILE, 0x3fd0ff, 0.10);
+  drawDashedCircle(radar, BASE.cx * TILE, BASE.cy * TILE, SLICE.baseRadar * TILE, 0x3fd0ff, 0.10);
   layers.groundFx.addChild(radar);
 
   // ---- clouds: drifting shader quads + their dim ground shadows -------------

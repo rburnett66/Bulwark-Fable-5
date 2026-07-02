@@ -7,6 +7,7 @@
 
 import { Sim } from '../src/sim/sim.js';
 import { TICK_RATE } from '../src/sim/sim.js';
+import { SLICE_LAYOUT } from '../src/sim/map.js';
 
 const args = process.argv.slice(2);
 const seed = Number(args[args.indexOf('--seed') + 1]) || 42;
@@ -32,7 +33,8 @@ const LATER = [
 ];
 
 function runOnce(s) {
-  const sim = new Sim({ seed: s });
+  // pinned to the fixed benchmark board — the scripted build is tuned to it
+  const sim = new Sim({ seed: s, layout: SLICE_LAYOUT });
   for (const c of SCRIPT) sim.issueCommand(c);
   const later = [...LATER];
   const maxTicks = 60 * 60 * TICK_RATE;

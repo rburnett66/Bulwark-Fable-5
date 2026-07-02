@@ -30,7 +30,7 @@ export function verifyLog(log, maxTicks = 1e6) {
 }
 
 // ---- localStorage persistence (browser only) --------------------------------
-const KEY = 'bulwark.replays.v1';
+const KEY = 'bulwark.replays.v2'; // v2: seeds now generate random maps, so v1 logs no longer replay
 const MAX_REPLAYS = 12;
 
 export function loadReplays() {

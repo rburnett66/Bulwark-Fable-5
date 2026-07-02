@@ -23,10 +23,10 @@ export class Game {
     this.replayMode = !!opts.replayLog;
     this.seed = this.replayMode ? opts.replayLog.seed : opts.seed;
 
-    this.sim = new Sim({ seed: this.seed });
+    this.sim = new Sim({ seed: this.seed });   // seed also generates + validates the random map
     if (this.replayMode) this.sim.feedCommands(opts.replayLog.commands);
 
-    this.renderer = new Renderer(host);
+    this.renderer = new Renderer(host, this.sim.map.layout);
     this.hud = new Hud(host, {
       onSelectBuild: (k) => this.selectBuild(k),
       onStartWave: () => { unlockAudio(); this.sim.issueCommand({ type: 'startWave' }); },
@@ -49,6 +49,7 @@ export class Game {
     this.bindInput();
     this.renderer.startCinematic();
     this.hud.storyToast(STORY.intro, 8000);
+    this.hud.toast('Recon — ' + this.sim.map.layout.desc, 6500);
     if (this.replayMode) this.hud.toast('Replaying battle log — inputs are locked, camera is yours.', 5000);
 
     this.tickerFn = () => this.frame(this.renderer.app.ticker.deltaMS);

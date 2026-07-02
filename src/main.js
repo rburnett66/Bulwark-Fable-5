@@ -4,6 +4,7 @@
 import { Game } from './game.js';
 import { Renderer } from './render/renderer.js';
 import { loadReplays, deleteReplay } from './sim/replay.js';
+import { generateLayout } from './sim/map.js';
 import { getSettings, setSetting, onSettingsChange } from './settings.js';
 import { Sfx, unlockAudio } from './audio.js';
 import { WAVES } from './sim/data.js';
@@ -28,10 +29,11 @@ class App {
     if (name === 'replays') this.renderReplays();
   }
 
-  // slowly rotating live board behind the menu — the shaders idle on display
+  // slowly rotating live board behind the menu — the shaders idle on display,
+  // on a freshly generated random map each visit
   startMenuBg() {
     const host = $('#menu-bg');
-    this.menuBg = new Renderer(host);
+    this.menuBg = new Renderer(host, generateLayout((Math.random() * 0xffffffff) >>> 0).layout);
     this.menuBg.cam.targetZoom = 1.12;
     const dummy = { units: [], structures: [], projectiles: [], getStructure: () => null };
     this.menuBgTicker = () => {
