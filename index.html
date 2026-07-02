@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>BULWARK — Vertical Slice</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%230c141c'/%3E%3Crect x='3' y='6' width='10' height='7' fill='%235b7f9e'/%3E%3Crect x='3' y='4' width='2' height='2' fill='%235b7f9e'/%3E%3Crect x='7' y='4' width='2' height='2' fill='%235b7f9e'/%3E%3Crect x='11' y='4' width='2' height='2' fill='%235b7f9e'/%3E%3Cpath d='M8 1l4 2-4 2z' fill='%233fd0ff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<script src="vendor/pixi.min.js"></script>
+</head>
+<body>
+  <!-- ============ MAIN MENU ============ -->
+  <div id="screen-menu" class="screen">
+    <div id="menu-bg" class="menu-bg"></div>
+    <div class="menu-panel">
+      <h1 class="title">BUL<span>WARK</span></h1>
+      <div class="tagline">Fortify a clearing. Learn a faction. Beat it.</div>
+      <button id="btn-play" class="menu-btn big">▶ &nbsp;Play</button>
+      <button id="btn-replays" class="menu-btn">🎬 &nbsp;Replays</button>
+      <button id="btn-settings" class="menu-btn">⚙ &nbsp;Settings</button>
+      <div class="seed-row">
+        <label for="seed-input">Seed</label>
+        <input id="seed-input" placeholder="random" spellcheck="false">
+      </div>
+      <div class="menu-foot">Vertical slice · Ground/Powder assault · deterministic sim core</div>
+    </div>
+  </div>
+
+  <!-- ============ REPLAYS ============ -->
+  <div id="screen-replays" class="screen hidden">
+    <div class="menu-panel wide">
+      <h2>Replays</h2>
+      <div class="panel-note">Reconstructed from the battle log (seed + commands). A matching final hash proves the sim is deterministic.</div>
+      <div id="replay-list"></div>
+      <button class="menu-btn btn-back">← Back</button>
+    </div>
+  </div>
+
+  <!-- ============ SETTINGS ============ -->
+  <div id="screen-settings" class="screen hidden">
+    <div class="menu-panel">
+      <h2>Settings</h2>
+      <div class="slider-row"><label>Master volume</label>
+        <input id="vol-master" type="range" min="0" max="1" step="0.05"></div>
+      <div class="slider-row"><label>Effects</label>
+        <input id="vol-sfx" type="range" min="0" max="1" step="0.05"></div>
+      <div class="slider-row"><label>Ambience</label>
+        <input id="vol-amb" type="range" min="0" max="1" step="0.05"></div>
+      <button id="btn-test-sound" class="menu-btn small">♪ Test sound</button>
+      <button class="menu-btn btn-back">← Back</button>
+    </div>
+  </div>
+
+  <!-- ============ GAME ============ -->
+  <div id="screen-game" class="screen hidden">
+    <div id="game-host"></div>
+    <div id="pause-overlay" class="hidden">
+      <div class="menu-panel">
+        <h2>Paused</h2>
+        <div class="slider-row"><label>Master volume</label>
+          <input id="pvol-master" type="range" min="0" max="1" step="0.05"></div>
+        <div class="slider-row"><label>Effects</label>
+          <input id="pvol-sfx" type="range" min="0" max="1" step="0.05"></div>
+        <div class="slider-row"><label>Ambience</label>
+          <input id="pvol-amb" type="range" min="0" max="1" step="0.05"></div>
+        <button id="btn-resume" class="menu-btn big">▶ Resume</button>
+        <button id="btn-quit" class="menu-btn danger">🏠 Quit to menu</button>
+        <div class="menu-foot">1/2/3 build · click tower: upgrade/repair/sell · Q/E rotate · Space: send wave · Shift-click: place multiple</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

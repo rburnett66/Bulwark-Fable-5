@@ -1,0 +1,12 @@
+{
+  "name": "bulwark",
+  "version": "0.1.0",
+  "description": "BULWARK — multi-domain tower defense vertical slice (PixiJS, deterministic sim core)",
+  "type": "module",
+  "scripts": {
+    "start": "node headless/serve.js",
+    "headless": "node headless/run.js",
+    "balance": "node headless/balance.js"
+  },
+  "license": "MIT"
+}

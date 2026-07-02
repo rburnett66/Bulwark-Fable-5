@@ -1,0 +1,82 @@
+BULWARK balance harness — 72 unit(s) × 100 runs × 75s
+defense set: cannon@14@6 cannon@18@8 flak@16@6 wall@12@5 wall@12@6 wall@12@7
+
+UnitID           domain   effDPS    σ        conv%   blockΔ%  PRICE   sheet
+GND-Troops       Walker   13.54     0.10     0.1     0.2      90      300
+GND-Trucks       Walker   5.55      0.13     0.0     0.6      37      298
+GND-Tanks        Walker   5.97      0.20     0.3     1.6      40      310
+GND-Artillery    Walker   9.90      0.18     0.3     0.6      66      303
+GND-HeavyTanks   Walker   1.60      0.26     1.4     2.9      11      315
+GND-Copters      Flyer    15.36     0.22     0.2     0.3      102     300
+GND-Planes       Flyer    17.14     0.37     0.1     0.3      114     299
+GND-Missiles     Flyer    8.44      0.71     0.1     0.1      56      301
+AIR-Troops       Walker   16.56     0.58     0.0     0.8      110     310
+AIR-Trucks       Walker   5.31      0.14     0.2     1.0      35      314
+AIR-Tanks        Walker   8.23      0.31     0.2     1.3      55      292
+AIR-Artillery    Walker   12.71     0.30     0.4     0.3      85      300
+AIR-HeavyTanks   Walker   3.00      0.06     0.2     0.4      20      281
+AIR-Copters      Flyer    17.81     0.36     0.1     0.0      119     309
+AIR-Planes       Flyer    19.40     0.60     0.3     0.8      129     312
+AIR-Missiles     Flyer    7.06      0.81     0.1     1.2      47      306
+HTC-Troops       Walker   9.09      0.21     0.0     0.4      61      298
+HTC-Trucks       Walker   5.13      0.02     0.0     0.0      34      288
+HTC-Tanks        Walker   4.62      0.13     0.2     1.0      31      301
+HTC-Artillery    Walker   10.69     0.21     0.3     0.8      71      317
+HTC-HeavyTanks   Walker   0.71      0.18     0.2     8.0      5       298
+HTC-Copters      Flyer    9.59      0.23     0.0     0.6      64      301
+HTC-Planes       Flyer    10.10     0.36     0.2     0.2      67      305
+HTC-Missiles     Flyer    7.45      0.88     2.0     2.1      50      315
+ART-Troops       Walker   12.31     0.44     0.3     1.5      82      295
+ART-Trucks       Walker   8.67      0.05     0.0     0.1      58      274
+ART-Tanks        Walker   4.95      0.14     0.0     0.5      33      304
+ART-Artillery    Walker   10.66     0.22     0.2     0.1      71      335
+ART-HeavyTanks   Walker   0.38      0.22     2.9     24.8     3       300
+ART-Copters      Flyer    14.58     0.31     0.0     0.5      97      303
+ART-Planes       Flyer    16.15     0.46     0.0     0.1      108     309
+ART-Missiles     Flyer    12.33     0.15     0.2     0.3      82      331
+WTR-Troops       Swimmer  8.21      0.09     0.1     0.3      55      301
+WTR-Trucks       Floater  3.12      0.04     0.1     0.6      21      305
+WTR-Tanks        Swimmer  4.77      0.08     0.3     0.2      32      308
+WTR-Artillery    Floater  9.31      0.19     0.2     0.2      62      297
+WTR-HeavyTanks   Swimmer  1.56      0.11     0.6     0.2      10      315
+WTR-Copters      Flyer    9.49      0.19     0.2     0.4      63      300
+WTR-Planes       Flyer    10.53     0.29     0.1     0.9      70      297
+WTR-Missiles     Flyer    5.44      0.39     0.3     1.0      36      294
+ARC-Troops       Walker   14.66     0.56     0.1     1.1      98      302
+ARC-Trucks       Walker   6.18      0.68     0.7     1.8      41      293
+ARC-Tanks        Walker   6.31      0.24     0.2     1.8      42      306
+ARC-Artillery    Walker   10.07     0.18     0.2     0.9      67      311
+ARC-HeavyTanks   Walker   1.71      0.36     1.9     7.5      11      306
+ARC-Copters      Flyer    16.87     0.26     0.1     0.0      112     302
+ARC-Planes       Flyer    18.66     0.45     0.1     0.0      124     304
+ARC-Missiles     Flyer    8.78      1.23     0.7     3.5      59      311
+SPC-Troops       Walker   9.25      0.21     0.0     0.5      62      299
+SPC-Trucks       Walker   5.00      0.01     0.0     0.1      33      298
+SPC-Tanks        Walker   4.90      0.15     0.1     1.1      33      298
+SPC-Artillery    Walker   11.50     0.23     0.3     1.0      77      308
+SPC-HeavyTanks   Walker   1.43      0.17     1.6     4.0      10      296
+SPC-Copters      Flyer    9.69      0.21     0.2     0.8      65      302
+SPC-Planes       Flyer    10.24     0.35     0.1     0.8      68      304
+SPC-Missiles     Flyer    7.39      0.93     2.3     3.5      49      307
+DRK-Troops       Walker   0.00      0.00     0.0     0.0      0       306
+DRK-Trucks       Walker   0.00      0.00     0.0     0.0      0       299
+DRK-Tanks        Walker   0.00      0.00     0.0     0.0      0       299
+DRK-Artillery    Walker   11.12     0.28     0.1     1.2      74      310
+DRK-HeavyTanks   Walker   0.00      0.00     0.0     0.0      0       293
+DRK-Copters      Flyer    0.00      0.00     0.0     0.0      0       306
+DRK-Planes       Flyer    0.00      0.00     0.0     0.0      0       310
+DRK-Missiles     Flyer    0.00      0.00     0.0     0.0      0       314
+GRN-Troops       Walker   0.00      0.00     0.0     0.0      0       290
+GRN-Trucks       Walker   0.00      0.00     0.0     0.0      0       291
+GRN-Tanks        Walker   0.00      0.00     0.0     0.0      0       276
+GRN-Artillery    Walker   10.83     0.20     0.3     0.2      72      284
+GRN-HeavyTanks   Walker   0.00      0.00     0.0     0.0      0       268
+GRN-Copters      Flyer    0.00      0.00     0.0     0.0      0       288
+GRN-Planes       Flyer    0.00      0.00     0.0     0.0      0       290
+GRN-Missiles     Flyer    0.00      0.00     0.0     0.0      0       288
+
+PRICE TABLE (gold = avg effective DPS × 6.67):
+{"GND-Troops":90,"GND-Trucks":37,"GND-Tanks":40,"GND-Artillery":66,"GND-HeavyTanks":11,"GND-Copters":102,"GND-Planes":114,"GND-Missiles":56,"AIR-Troops":110,"AIR-Trucks":35,"AIR-Tanks":55,"AIR-Artillery":85,"AIR-HeavyTanks":20,"AIR-Copters":119,"AIR-Planes":129,"AIR-Missiles":47,"HTC-Troops":61,"HTC-Trucks":34,"HTC-Tanks":31,"HTC-Artillery":71,"HTC-HeavyTanks":5,"HTC-Copters":64,"HTC-Planes":67,"HTC-Missiles":50,"ART-Troops":82,"ART-Trucks":58,"ART-Tanks":33,"ART-Artillery":71,"ART-HeavyTanks":3,"ART-Copters":97,"ART-Planes":108,"ART-Missiles":82,"WTR-Troops":55,"WTR-Trucks":21,"WTR-Tanks":32,"WTR-Artillery":62,"WTR-HeavyTanks":10,"WTR-Copters":63,"WTR-Planes":70,"WTR-Missiles":36,"ARC-Troops":98,"ARC-Trucks":41,"ARC-Tanks":42,"ARC-Artillery":67,"ARC-HeavyTanks":11,"ARC-Copters":112,"ARC-Planes":124,"ARC-Missiles":59,"SPC-Troops":62,"SPC-Trucks":33,"SPC-Tanks":33,"SPC-Artillery":77,"SPC-HeavyTanks":10,"SPC-Copters":65,"SPC-Planes":68,"SPC-Missiles":49,"DRK-Troops":0,"DRK-Trucks":0,"DRK-Tanks":0,"DRK-Artillery":74,"DRK-HeavyTanks":0,"DRK-Copters":0,"DRK-Planes":0,"DRK-Missiles":0,"GRN-Troops":0,"GRN-Trucks":0,"GRN-Tanks":0,"GRN-Artillery":72,"GRN-HeavyTanks":0,"GRN-Copters":0,"GRN-Planes":0,"GRN-Missiles":0}
+
+read: conv% ≈ 0 → prices stabilized over the run count;
+      blockΔ% small → stable across seed blocks (GDD §17 grade (c),(d)).
