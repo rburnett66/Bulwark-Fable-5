@@ -245,7 +245,7 @@ export class Sim {
     let c = 0, r;
     const lay = this.map.layout;
     if (domain === 'Walker') r = lay.spawns.ground.rows[Math.floor(entry.rowPick * lay.spawns.ground.rows.length)];
-    else if (domain === 'Floater' || domain === 'Swimmer') r = lay.waterRows[Math.floor(entry.rowPick * lay.waterRows.length)];
+    else if (domain === 'Floater' || domain === 'Swimmer') r = lay.spawns.water.rows[Math.floor(entry.rowPick * lay.spawns.water.rows.length)];
     else r = lay.spawns.air.min + Math.floor(entry.rowPick * (lay.spawns.air.max - lay.spawns.air.min + 1)); // flyer: any lane
     const u = this.makeUnit(def, domain, c, r, entry, spec);
     this.units.push(u);
@@ -381,12 +381,12 @@ export class Sim {
       return;
     }
     if (u.pathIdx >= u.path.length) {
-      // path exhausted but still out of range (e.g. floater short range): nudge toward base
-      const [bx, by] = this.map.closestPointOnBase(u.x, u.y);
-      if (u.domain === 'Walker') this.moveToward(u, bx, by);
-      else { // floaters stay in water
-        const tx = Math.min(Math.max(bx, 0.5), GRID_W - 0.5);
-        this.moveToward(u, tx, u.y);
+      // path exhausted but still out of range: walkers nudge toward the base;
+      // floaters hold station at the lane end (their path goal is already
+      // within strike range, so this is a float-precision edge at most)
+      if (u.domain === 'Walker') {
+        const [bx, by] = this.map.closestPointOnBase(u.x, u.y);
+        this.moveToward(u, bx, by);
       }
       return;
     }
@@ -686,7 +686,7 @@ export class Sim {
     let r;
     const lay = this.map.layout;
     if (dom === 'Walker') r = row ?? lay.spawns.ground.rows[Math.floor(pick * lay.spawns.ground.rows.length)];
-    else if (dom === 'Floater' || dom === 'Swimmer') r = row ?? lay.waterRows[Math.floor(pick * lay.waterRows.length)];
+    else if (dom === 'Floater' || dom === 'Swimmer') r = row ?? lay.spawns.water.rows[Math.floor(pick * lay.spawns.water.rows.length)];
     else r = row ?? lay.spawns.air.min + Math.floor(pick * (lay.spawns.air.max - lay.spawns.air.min + 1));
     const u = this.makeUnit(def, dom, 0, r, { kind: unitId, rowPick: pick, jx, jy },
       { targetsStructures: targetsStructures || def.targets === 'Structures' });

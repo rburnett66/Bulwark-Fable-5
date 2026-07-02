@@ -27,14 +27,18 @@ node headless/balance.js --runs 40    # faster pass
 - **Survive 5 waves** of the Ground/Powder assault. Base HP 2000, starting gold 800
   (locked slice parameters from `bulwark-balance.xlsx` → Vertical_Slice).
 - **Every game gets a random map**, generated from the game seed within the slice
-  geometry contract (one ground lane beside one water lane, base in a clearing):
-  the river's position and width, which bank the outpost sits on, the spawn
-  corridor, tree stands, and elevation bands all vary. Each candidate board
-  passes a quick pathing verification before play — walker A* routes from every
-  spawn row (with a minimum march length), a floater route into strike range of
+  geometry contract (one ground lane beside one water lane, base in a clearing).
+  Water is carved **organically**: a meandering river walks west→east with
+  breathing width (2–3 tiles), sometimes budding a pond; the outpost claims a
+  shoreline clearing in the east on either bank, and spawn corridors, tree
+  stands, and elevation bands vary with it. Each candidate board passes a quick
+  pathing verification before play — walker A* routes from every spawn row (with
+  a minimum march length), a floater route down the river into strike range of
   the base, and enough buildable ground — otherwise it re-rolls deterministically
   (fixed board as final fallback). Same seed → same map, so replays reconstruct
   the board for free; the intro "Recon" toast describes what was generated.
+- New to the game? Read **`docs/GAME_GUIDE.md`** — full feature tour, controls,
+  enemy/tower tables, and tactics.
 - **Build** (keys 1/2/3 or the bottom bar): Cannon Tower (anti-ground), Flak Tower
   (anti-air, needs radar contact), Wall/Moat (reroutes walkers — you can maze, but
   never fully seal the lane). Hover shows a valid/invalid ghost; click to place

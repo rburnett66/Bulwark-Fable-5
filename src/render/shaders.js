@@ -11,8 +11,6 @@ uniform sampler2D uSampler;
 uniform vec4 inputSize;
 uniform vec4 outputFrame;
 uniform float uTime;
-uniform vec3 uDeep;
-uniform vec3 uShallow;
 uniform vec3 uFoam;
 
 float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
@@ -24,28 +22,34 @@ float noise(vec2 p){
 }
 
 void main(void){
-  vec2 uv = vTextureCoord * inputSize.xy / outputFrame.zw;   // 0..1 across the band
   vec4 src = texture2D(uSampler, vTextureCoord);
   if (src.a < 0.01) { gl_FragColor = src; return; }
 
-  vec2 wuv = uv * vec2(26.0, 3.0);                 // tile-ish space
+  // tile-ish space regardless of the river's bounding box
+  vec2 uv = vTextureCoord * inputSize.xy / outputFrame.zw;
+  vec2 wuv = uv * outputFrame.zw / 48.0;
   float t = uTime;
 
-  // two crossing wave trains + a noise shimmer
-  float w1 = sin(wuv.x*2.1 - t*1.4 + sin(wuv.y*3.0)*0.8);
-  float w2 = sin(wuv.x*3.7 + wuv.y*2.2 + t*0.9);
-  float n  = noise(wuv*2.0 + vec2(t*0.35, -t*0.22));
-  float lum = 0.5 + 0.28*w1*0.5 + 0.22*w2*0.5 + 0.3*(n-0.5);
+  // deep/shallow comes pre-painted in the source cells; add crossing wave
+  // trains + a drifting noise shimmer on top
+  float w1 = sin(wuv.x*2.6 - t*1.4 + sin(wuv.y*3.4)*0.9);
+  float w2 = sin(wuv.x*4.2 + wuv.y*3.1 + t*0.9);
+  float n  = noise(wuv*2.4 + vec2(t*0.35, -t*0.22));
+  vec3 col = src.rgb / max(src.a, 0.001);
+  col += 0.10*w1 + 0.08*w2 + 0.14*(n - 0.5);
 
-  // sub-surface: darker toward the middle of the band (deep channel)
-  float depth = 1.0 - abs(uv.y - 0.5)*2.0;
-  vec3 col = mix(uShallow, uDeep, smoothstep(0.15, 0.85, depth));
-  col += (lum - 0.5) * 0.18;
-
-  // foam at banks + sparse crest foam
-  float bank = smoothstep(0.045, 0.0, abs(uv.y - 0.02)) + smoothstep(0.045, 0.0, abs(uv.y - 0.98));
+  // shoreline foam: probe the water mask's alpha around this pixel — works
+  // for any organic river/pond shape, no straight-band assumption
+  vec2 px = inputSize.zw * 6.0;
+  float edge = 1.0;
+  edge = min(edge, texture2D(uSampler, vTextureCoord + vec2(px.x, 0.0)).a);
+  edge = min(edge, texture2D(uSampler, vTextureCoord - vec2(px.x, 0.0)).a);
+  edge = min(edge, texture2D(uSampler, vTextureCoord + vec2(0.0, px.y)).a);
+  edge = min(edge, texture2D(uSampler, vTextureCoord - vec2(0.0, px.y)).a);
+  float lap = 0.6 + 0.4*sin(t*1.7 + wuv.x*4.0 + wuv.y*4.0);   // lapping pulse
+  float foam = (1.0 - edge) * lap;
   float crest = smoothstep(0.82, 0.98, 0.5 + 0.5*w1) * smoothstep(0.6, 0.9, n);
-  col = mix(col, uFoam, clamp(bank*0.7 + crest*0.35, 0.0, 1.0));
+  col = mix(col, uFoam, clamp(foam*0.7 + crest*0.3, 0.0, 1.0));
 
   gl_FragColor = vec4(col, 1.0) * src.a;
 }`;
@@ -99,13 +103,10 @@ void main(void){
 
 export function makeWaterFilter(palette) {
   const toV3 = (c) => [((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255) / 255];
-  const f = new PIXI.Filter(undefined, WATER_FRAG, {
+  return new PIXI.Filter(undefined, WATER_FRAG, {
     uTime: 0,
-    uDeep: toV3(palette.waterDeep),
-    uShallow: toV3(palette.waterShallow),
     uFoam: toV3(palette.waterFoam),
   });
-  return f;
 }
 
 export function makeCloudFilter(seed, density = 1.6) {

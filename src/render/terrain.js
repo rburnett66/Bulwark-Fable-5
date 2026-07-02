@@ -18,10 +18,11 @@ function lcg(seed) {
 
 export function buildTerrain(layers, layout = SLICE_LAYOUT) {
   const rnd = lcg(1234567);
-  const WATER_ROWS = layout.waterRows;
   const BASE = layout.base;
   const TREES = layout.trees;
-  const isWater = (c, r) => r >= WATER_ROWS[0] && r <= WATER_ROWS[WATER_ROWS.length - 1];
+  const wset = new Set(layout.water);
+  const isWater = (c, r) => wset.has(r * GRID_W + c);
+  const waterCells = layout.water.map(k => [k % GRID_W, (k - (k % GRID_W)) / GRID_W]);
 
   // ---- ground: low/mid/high bands + mottling -------------------------------
   const g = new PIXI.Graphics();
@@ -49,17 +50,32 @@ export function buildTerrain(layers, layout = SLICE_LAYOUT) {
     g.drawEllipse(BASE.cx * TILE + Math.cos(a) * d, BASE.cy * TILE + Math.sin(a) * d * 0.7, 10 + rnd() * 18, 7 + rnd() * 10);
     g.endFill();
   }
-  // banks along the water
+  // dirt banks hugging the shoreline, whatever shape the river takes
   g.beginFill(PALETTE.dirt, 0.5);
-  g.drawRect(0, WATER_ROWS[0] * TILE - 4, GRID_W * TILE, 4);
-  g.drawRect(0, (WATER_ROWS[WATER_ROWS.length - 1] + 1) * TILE, GRID_W * TILE, 4);
+  for (const [c, r] of waterCells) {
+    if (!isWater(c, r - 1)) g.drawRect(c * TILE, r * TILE - 3, TILE, 3);
+    if (!isWater(c, r + 1)) g.drawRect(c * TILE, (r + 1) * TILE, TILE, 3);
+    if (!isWater(c - 1, r)) g.drawRect(c * TILE - 3, r * TILE, 3, TILE);
+    if (!isWater(c + 1, r)) g.drawRect((c + 1) * TILE, r * TILE, 3, TILE);
+  }
   g.endFill();
   layers.ground.addChild(g);
 
-  // ---- water lane with animated shader -------------------------------------
+  // ---- water with animated shader -------------------------------------------
+  // shore cells fill shallow, fully-surrounded cells fill deep; the shader
+  // adds waves and probes the alpha edge for shoreline foam.
+  // cells drawn overlapping so no anti-aliased seams appear inside the mask
+  // (the shader's foam probe would read seams as shoreline)
   const water = new PIXI.Graphics();
+  water.beginFill(PALETTE.waterShallow);
+  for (const [c, r] of waterCells) water.drawRect(c * TILE - 1, r * TILE - 1, TILE + 2, TILE + 2);
+  water.endFill();
   water.beginFill(PALETTE.waterDeep);
-  water.drawRect(0, WATER_ROWS[0] * TILE, GRID_W * TILE, WATER_ROWS.length * TILE);
+  for (const [c, r] of waterCells) {
+    if (isWater(c + 1, r) && isWater(c - 1, r) && isWater(c, r + 1) && isWater(c, r - 1)) {
+      water.drawRect(c * TILE - 6, r * TILE - 6, TILE + 12, TILE + 12);
+    }
+  }
   water.endFill();
   const waterFilter = makeWaterFilter(PALETTE);
   water.filters = [waterFilter];
